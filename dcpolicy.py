@@ -11,7 +11,7 @@ from dataset import *
 
 import copy
 
-class Policy:
+class Policy(object):
 
     """
     A dataset takes a data frame as input and a list of
@@ -32,7 +32,8 @@ class Policy:
                     self.featurizers[t] = CategoricalFeatureSpace(dataset.df, t)
 
         #initializes the data structure
-        self._row2featureVector(dataset.df.iloc[0,:])
+        tmp = self._row2featureVector(dataset.df.iloc[0,:])
+        self.shape = tmp.shape
 
     """
     This function converts a row into a feature vector
@@ -45,7 +46,7 @@ class Policy:
         start = 0
 
         for t in self.types:
-            print(t, row[t])
+            #print(t, row[t])
             v = np.array(self.featurizers[t].val2feature(row[t]))
             
             if self.types[t] == 'cat':
@@ -68,29 +69,51 @@ class Policy:
         return self.featurizers[attr].feature2val(f[vindices[0]:vindices[1]])
 
 
-    def _eval(self, f):
-        return f + np.random.randn(f.shape[0])
+    def _sampleBatch(self, f, step, batch_size):
+        params = []
+
+        for i in range(batch_size):
+            params.append(f + step*np.random.randn(np.squeeze(f.shape)))
+
+        params.append(f)
+
+        return params
+
+    def _searchBatch(self, i, step, batch_size):
+        attrlist = [t for t in self.types]
+
+        batch = self._sampleBatch(self._row2featureVector(self.dataset.df.iloc[i,:]), step, batch_size)
+
+        def rapply(policy, attr, f, j, row):
+            features = policy._row2featureVector(row)
+            if j == row.name:
+                return policy._featureVector2attr(f, attr)
+            return policy._featureVector2attr(features, attr)
+
+        batch_results = []
+
+        for b in batch:
+            
+            fnlist = []
+            fnlist.append(lambda row: rapply(self, 'AAA', b, i, row))
+            fnlist.append(lambda row: rapply(self, 'BBB', b, i, row))
+
+            dataset, result = self.dataset.iterate(fnlist,attrlist,max_iters=2)
+            batch_results.append((result[-1]['score'],dataset))
+
+        return sorted(batch_results, key=lambda x: x[0])
 
 
     def run(self, config={}):
-        attrlist = [t for t in self.types]
-        
-        fnlist = []
+        rows, cols = self.dataset.df.shape
 
+        for t in range(10):
+            i = np.random.choice(np.arange(0,rows))
+            b = self._searchBatch(i, 1.0/(t+1), 10)
+            self.dataset = b[-1][1]
+            print("Iteration", t, b[-1][0])
 
-        def rapply(policy, attr, row):
-            features = policy._row2featureVector(row)
-            out = policy._eval(features)
-            print("__",attr,policy._featureVector2attr(out, attr))
-            return policy._featureVector2attr(out, attr)
-
-        fnlist.append(lambda row: rapply(self, 'AAA', row))
-        fnlist.append(lambda row: rapply(self, 'BBB', row))
-
-
-        dataset, result = self.dataset.iterate(fnlist,attrlist,max_iters=1)
-
-        print(dataset.df)
+        return self.dataset
 
 
 

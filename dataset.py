@@ -36,11 +36,17 @@ class Dataset:
         j = newDf.columns.get_loc(attr)
         for i in range(rows):
             newDf.iloc[i,j] = fn(newDf.iloc[i,:])
-            print("++",j,newDf.iloc[i,j], fn(newDf.iloc[i,:]))
+            #print("++",j,newDf.iloc[i,j], fn(newDf.iloc[i,:]))
 
         return Dataset(newDf, 
                        self.qfnList, 
                        self.provenance)
+
+    def _sampleRow(self):
+        newDf = pd.DataFrame.copy(self.df)
+        rows, cols = self.df.shape
+        i = np.random.choice(np.arange(0,rows))
+        return newDf.iloc[i,:]
 
 
     """
@@ -144,7 +150,7 @@ class CategoricalFeatureSpace:
     Calculates the value of a feature vector
     """
     def feature2val(self, f):
-        _ , result = self.tree.query(f, k=1)
+        _ , result = self.tree.query(f.reshape(1, -1), k=1)
         return self.iindex[result[0][0]]
 
 
@@ -152,7 +158,7 @@ class CategoricalFeatureSpace:
     Calculates the features of a value
     """
     def val2feature(self, val):
-        print(val)
+        #print(val)
         #snap to nearest value if not there
         if val in self.values:
             return self.findex[val]
