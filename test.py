@@ -1,13 +1,6 @@
 
 import pandas as pd
-import numpy as np
-import random
-from sklearn.manifold import spectral_embedding
-from sklearn.neighbors import BallTree
-import distance 
-from dcpolicy import *
-from dataset import *
-from optimizer import *
+from optclean import *
 
 df = pd.DataFrame({'AAA' : ['USA','United States','China','Canada'], 'BBB' : [10,15,30,40],
                    'CCC' : [100,50,-30,-50]})
