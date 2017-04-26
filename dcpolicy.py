@@ -73,7 +73,11 @@ class Policy(object):
         params = []
 
         for i in range(batch_size):
-            params.append(f + step*np.random.randn(np.squeeze(f.shape)))
+            mask = np.zeros(f.shape)
+            maskind = self.attrIndex[np.random.choice(list(self.attrIndex.keys()))]
+            mask[maskind[0]:maskind[1]] = 1
+
+            params.append(f + step*mask*np.random.randn(np.squeeze(f.shape)))
 
         params.append(f)
 
@@ -95,8 +99,8 @@ class Policy(object):
         for b in batch:
             
             fnlist = []
-            fnlist.append(lambda row: rapply(self, 'AAA', b, i, row))
-            fnlist.append(lambda row: rapply(self, 'BBB', b, i, row))
+            for t in self.types:
+                fnlist.append(lambda row, attr=t: rapply(self, attr, b, i, row))
 
             dataset, result = self.dataset.iterate(fnlist,attrlist,max_iters=2)
             batch_results.append((result[-1]['score'],dataset))
@@ -109,7 +113,7 @@ class Policy(object):
 
         for t in range(10):
             i = np.random.choice(np.arange(0,rows))
-            b = self._searchBatch(i, 1.0/(t+1), 10)
+            b = self._searchBatch(i, 10.0/(t+1), 10)
             self.dataset = b[-1][1]
             print("Iteration", t, b[-1][0])
 
