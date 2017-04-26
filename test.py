@@ -2,35 +2,51 @@
 import pandas as pd
 from optclean import *
 
-df = pd.DataFrame({'AAA' : ['USA','United States','China','Canada'], 'BBB' : [10,15,30,40],
-                   'CCC' : [100,50,-30,-50]})
-
-print(df)
-
+## Example 1
+"""
+df = pd.DataFrame({'vals': [1,2,3,4,5,100,9,4,3]})
 d = Dataset(df)
 
-#qfn = lambda a: -len(set(a['AAA'].values))
+qfn = lambda a: -np.sum(np.abs(np.array(a['vals'].values) - \
+                         np.median(np.array(a['vals'].values))) > 10)
+d.addQualityMetric(qfn)
 
-#d.addQualityMetric(qfn)
+p = Policy(d, {'vals': 'num'}, stepsize=100, batchsize=100, iterations=25)
+print(p.run().df)
+"""
 
-#qfn = lambda a: -np.sum(np.abs(np.array(a['BBB'].values)))
+## Example 2
+"""
+df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil'], 'Code' : ['US','USA','CN','CA','BA']})
+d = Dataset(df)
 
+def qfn(a):
+    violations = 0
 
-qfn = lambda a: -np.abs(np.sum(a['BBB'].values) - 100)
+    for n in a['Name'].values:
+        if len(set(a.where(a['Name']==n)['Code'].dropna().values)) > 1:
+            violations = violations + 1
 
+    return -violations
 
 d.addQualityMetric(qfn)
 
-"""
-c = CategoricalFeatureSpace(df, 'AAA', distance.levenshtein)
-print(c.feature2val([np.array([2,2])]))
-print(c.val2feature("US"))
-
-
-n = NumericalFeatureSpace(df, 'BBB')
-print(n.val2feature(5))
-print(n.feature2val(5))
-"""
-
-p = Policy(d, {'AAA': 'cat', 'BBB': 'num'})
+p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=20)
 print(p.run().df)
+"""
+
+## Example 3
+df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil'], 'Code' : ['US','USA','CN','CA','BA']})
+d = Dataset(df)
+
+qfn = lambda a: -len(set([len(n) for n in a['Code'].values]))
+
+d.addQualityMetric(qfn)
+
+p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=20)
+print(p.run().df)
+
+
+
+
+

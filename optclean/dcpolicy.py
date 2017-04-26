@@ -124,9 +124,9 @@ class Policy(object):
 
         for t in range(self.aconfig['iterations']):
             i = np.random.choice(np.arange(0,rows))
-            b = self._searchBatch(i, self.aconfig['step']/(t+1), self.aconfig['batch'])
+            b = self._searchBatch(i, self.aconfig['step'], self.aconfig['batch'])
             self.dataset = b[-1][1]
-            print("Iteration", t, b[-1][0])
+            print("Iteration", i, t, b[-1][0])
 
         return self.dataset
 
