@@ -17,7 +17,14 @@ class Policy(object):
     A dataset takes a data frame as input and a list of
     quality functions
     """
-    def __init__(self, dataset, types, config={}):
+    def __init__(self, 
+                 dataset, 
+                 types, 
+                 stepsize=100, 
+                 iterations=100, 
+                 batchsize=10, 
+                 rollout=2):
+
         self.dataset = dataset
         self.types = types
         self.featurizers = {}
@@ -26,14 +33,18 @@ class Policy(object):
             if types[t] == 'num':
                 self.featurizers[t] = NumericalFeatureSpace(dataset.df, t)
             elif types[t] == 'cat':
-                if t in config:
-                    self.featurizers[t] = CategoricalFeatureSpace(dataset.df, t, **config[t])
-                else:
-                    self.featurizers[t] = CategoricalFeatureSpace(dataset.df, t)
+                self.featurizers[t] = CategoricalFeatureSpace(dataset.df, t)
 
         #initializes the data structure
         tmp = self._row2featureVector(dataset.df.iloc[0,:])
         self.shape = tmp.shape
+
+
+        self.aconfig = {}
+        self.aconfig['step'] = stepsize
+        self.aconfig['iterations'] = iterations
+        self.aconfig['batch'] = batchsize
+        self.aconfig['rollout'] = rollout
 
     """
     This function converts a row into a feature vector
@@ -102,7 +113,7 @@ class Policy(object):
             for t in self.types:
                 fnlist.append(lambda row, attr=t: rapply(self, attr, b, i, row))
 
-            dataset, result = self.dataset.iterate(fnlist,attrlist,max_iters=2)
+            dataset, result = self.dataset.iterate(fnlist,attrlist,max_iters=self.aconfig['rollout'])
             batch_results.append((result[-1]['score'],dataset))
 
         return sorted(batch_results, key=lambda x: x[0])
@@ -111,9 +122,9 @@ class Policy(object):
     def run(self, config={}):
         rows, cols = self.dataset.df.shape
 
-        for t in range(10):
+        for t in range(self.aconfig['iterations']):
             i = np.random.choice(np.arange(0,rows))
-            b = self._searchBatch(i, 10.0/(t+1), 10)
+            b = self._searchBatch(i, self.aconfig['step']/(t+1), self.aconfig['batch'])
             self.dataset = b[-1][1]
             print("Iteration", t, b[-1][0])
 
