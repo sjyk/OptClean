@@ -15,8 +15,9 @@ p = Policy(d, {'vals': 'num'}, stepsize=100, batchsize=100, iterations=25)
 print(p.run().df)
 """
 
+
+
 ## Example 2
-"""
 df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil'], 'Code' : ['US','USA','CN','CA','BA']})
 d = Dataset(df)
 
@@ -31,10 +32,12 @@ def qfn(a):
 
 d.addQualityMetric(qfn)
 
-p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=20)
+p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=5)
 print(p.run().df)
-"""
 
+
+
+"""
 ## Example 3
 df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil'], 'Code' : ['US','USA','CN','CA','BA']})
 d = Dataset(df)
@@ -43,8 +46,10 @@ qfn = lambda a: -len(set([len(n) for n in a['Code'].values]))
 
 d.addQualityMetric(qfn)
 
-p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=20)
+p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=5)
 print(p.run().df)
+"""
+
 
 
 

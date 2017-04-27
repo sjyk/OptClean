@@ -60,6 +60,7 @@ class Dataset:
             dataset = dataset._map(f,attrList[i])
 
         return dataset
+        
 
     """
     Evaluates the quality metric
@@ -67,14 +68,9 @@ class Dataset:
     def _evalQ(self):
         baseline = [qfn(self.provenance) for qfn in self.qfnList]
         scores = [qfn(self.df) for qfn in self.qfnList]
-        merged = self.df.merge(self.provenance, indicator=True, how='outer')
-        ro = merged[merged['_merge'] == 'right_only'].shape[0]
-        lo = merged[merged['_merge'] == 'left_only'].shape[0]
-        edit = (ro + lo)/2
         
         return { 'baseline': np.sum(baseline),
                  'score': np.sum(scores),
-                 'edit': edit,
                  'rawBaseline': baseline,
                  'rawScores': scores
                }
