@@ -3,7 +3,6 @@ import pandas as pd
 from optclean import *
 
 ## Example 1
-"""
 df = pd.DataFrame({'vals': [1,2,3,4,5,100,9,4,3]})
 d = Dataset(df)
 
@@ -11,13 +10,14 @@ qfn = lambda a: -np.sum(np.abs(np.array(a['vals'].values) - \
                          np.median(np.array(a['vals'].values))) > 10)
 d.addQualityMetric(qfn)
 
-p = Policy(d, {'vals': 'num'}, stepsize=100, batchsize=100, iterations=25)
+p = Policy(d, {'vals': 'num'}, stepsize=100, batchsize=100, iterations=10)
 print(p.run().df)
-"""
+
 
 
 
 ## Example 2
+"""
 df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil'], 'Code' : ['US','USA','CN','CA','BA']})
 d = Dataset(df)
 
@@ -34,6 +34,7 @@ d.addQualityMetric(qfn)
 
 p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=5)
 print(p.run().df)
+"""
 
 
 

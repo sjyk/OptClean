@@ -85,7 +85,9 @@ class Policy(object):
 
         for i in range(batch_size):
             typed_keys = [k for k in self.attrIndex.keys() if k in self.types]
+            
             attr = np.random.choice(typed_keys)
+
             dtype = self.types[attr] 
 
             action = np.random.choice(getPossibleActions(dtype))
@@ -98,9 +100,9 @@ class Policy(object):
 
             #print(i, attr, vparam, action['fn'](attr, f, vparam))
 
-            params.append(action['fn'](attr, f, vparam))
+            params.append((action['fn'](attr, f, vparam), (action['name'], attr, vparam, self._row2featureVector(f))))
 
-        params.append(f.copy(deep=True))
+        params.append((f.copy(deep=True),('noop',None, None, self._row2featureVector(f))))
 
         #print('---',f,params)
 
@@ -124,7 +126,10 @@ class Policy(object):
 
         batch_results = []
 
-        for b in batch:
+        for updatedRows in batch:
+
+            b = updatedRows[0]
+            op = updatedRows[1]
 
             ec = self.editCost(self.dataset.provenance.iloc[i,:], b)
             
@@ -133,7 +138,7 @@ class Policy(object):
                 fnlist.append(lambda row, update=b, attr=t: rapply(self, attr, update, i, row))
 
             dataset, result = self.dataset.iterate(fnlist,attrlist,max_iters=self.aconfig['rollout'])
-            batch_results.append((result[-1]['score'], ec , dataset))
+            batch_results.append((result[-1]['score'], ec , dataset, op))
 
         return sorted(batch_results, key=lambda x: x[0:1])
 
@@ -145,7 +150,7 @@ class Policy(object):
             i = np.random.choice(np.arange(0,rows))
             b = self._searchBatch(i, self.aconfig['step'], self.aconfig['batch'])
             self.dataset = b[-1][2]
-            print("Iteration", i, t, b[-1][0])
+            print("Iteration", i, t, b[-1][0], b[-1][3])
 
         return self.dataset
 

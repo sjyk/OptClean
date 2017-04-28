@@ -6,13 +6,13 @@ import copy
 
 def getPossibleActions(dtype):
     if dtype == 'cat':
-        return [{'fn': replaceAtRandom, 'params': 'value'}]
+        return [{'fn': replace, 'params': 'value', 'name': 'replace'}]
 
     if dtype == 'num':
-        return [{'fn': around, 'params': None}, 
-                {'fn': roundUp, 'params': None}, 
-                {'fn': aroundDown, 'params': None}, 
-                {'fn': replaceAtRandom, 'params': 'value'}]
+        return [{'fn': around, 'params': None, 'name': 'around'}, 
+                {'fn': roundUp, 'params': None, 'name': 'roundUp'}, 
+                {'fn': roundDown, 'params': None, 'name': 'roundDown'}, 
+                {'fn': replace, 'params': 'value', 'name': 'replace'}]
 
 def around(attr, row, params):
     row = row.copy(deep=True)
@@ -29,7 +29,7 @@ def roundDown(attr, row, params):
     row[attr] = np.floor(row[attr])
     return row
 
-def replaceAtRandom(attr, row, params):
+def replace(attr, row, params):
     row = row.copy(deep=True)
     row[attr] = params
     #print("--",row)
