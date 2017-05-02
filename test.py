@@ -1,7 +1,9 @@
 
 import pandas as pd
 from optclean import *
+from optclean.fapproximation.learning import *
 
+"""
 ## Example 1
 df = pd.DataFrame({'vals': [1,2,3,4,5,100,9,4,3]})
 d = Dataset(df)
@@ -12,13 +14,13 @@ d.addQualityMetric(qfn)
 
 p = Policy(d, {'vals': 'num'}, stepsize=100, batchsize=100, iterations=10)
 print(p.run().df)
+"""
 
 
 
 
 ## Example 2
-"""
-df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil'], 'Code' : ['US','USA','CN','CA','BA']})
+df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil', 'United States'], 'Code' : ['US','USA','CN','CA','BA', 'U.S.A']})
 d = Dataset(df)
 
 def qfn(a):
@@ -32,9 +34,12 @@ def qfn(a):
 
 d.addQualityMetric(qfn)
 
-p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=5)
-print(p.run().df)
-"""
+p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=10)
+print(p.run())
+
+#l = CleaningLearner(d, p)
+#l.train()
+#print(l.apply()[0].df)
 
 
 

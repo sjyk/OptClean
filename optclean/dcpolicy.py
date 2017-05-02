@@ -100,9 +100,9 @@ class Policy(object):
 
             #print(i, attr, vparam, action['fn'](attr, f, vparam))
 
-            params.append((action['fn'](attr, f, vparam), (action['name'], attr, vparam, self._row2featureVector(f))))
+            params.append((action['fn'](attr, f, vparam), (action['name'], attr, vparam, self._row2featureVector(f), self._row2featureVector(action['fn'](attr, f, vparam)) )))
 
-        params.append((f.copy(deep=True),('noop',None, None, self._row2featureVector(f))))
+        params.append((f.copy(deep=True),('noop',None, None, self._row2featureVector(f), self._row2featureVector(f))))
 
         #print('---',f,params)
 
@@ -145,14 +145,16 @@ class Policy(object):
 
     def run(self, config={}):
         rows, cols = self.dataset.df.shape
+        edits = []
 
         for t in range(self.aconfig['iterations']):
             i = np.random.choice(np.arange(0,rows))
             b = self._searchBatch(i, self.aconfig['step'], self.aconfig['batch'])
             self.dataset = b[-1][2]
-            print("Iteration", i, t, b[-1][0], b[-1][3])
+            #print("Iteration", i, t, b[-1][0], b[-1][3])
+            edits.append(b[-1][3])
 
-        return self.dataset
+        return self.dataset, edits
 
 
     def editCost(self, row, update):
