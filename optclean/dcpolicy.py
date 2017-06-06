@@ -92,6 +92,8 @@ class Policy(object):
 
             action = np.random.choice(getPossibleActions(dtype))
 
+            scope = np.random.choice([k for k in self.types])
+
             if action['params'] == 'value':
                 vparam = np.random.choice(self.dataset.df[attr].values)
                 #print(vparam)
@@ -100,9 +102,9 @@ class Policy(object):
 
             #print(i, attr, vparam, action['fn'](attr, f, vparam))
 
-            params.append((action['fn'](attr, f, vparam), (action['name'], attr, vparam, self._row2featureVector(f), self._row2featureVector(action['fn'](attr, f, vparam)) )))
+            params.append((action['fn'](attr, f, vparam), (action['name'], attr, vparam, self._row2featureVector(f), self._row2featureVector(action['fn'](attr, f, vparam)) ), scope))
 
-        params.append((f.copy(deep=True),('noop',None, None, self._row2featureVector(f), self._row2featureVector(f))))
+        params.append((f.copy(deep=True),('noop',None, None, self._row2featureVector(f), self._row2featureVector(f)), scope))
 
         #print('---',f,params)
 
@@ -119,7 +121,7 @@ class Policy(object):
             features = policy._row2featureVector(row)
             updateFeatures = policy._row2featureVector(f)
 
-            if j == row.name:
+            if row[j] == f[j]:
                 return policy._featureVector2attr(updateFeatures, attr)
 
             return policy._featureVector2attr(features, attr)
@@ -130,14 +132,16 @@ class Policy(object):
 
             b = updatedRows[0]
             op = updatedRows[1]
-
-            ec = self.editCost(self.dataset.provenance.iloc[i,:], b)
+            s = updatedRows[2]
             
             fnlist = []
             for t in self.types:
-                fnlist.append(lambda row, update=b, attr=t: rapply(self, attr, update, i, row))
+                fnlist.append(lambda row, update=b, scope=s, attr=t: rapply(self, attr, update, scope, row))
 
             dataset, result = self.dataset.iterate(fnlist,attrlist,max_iters=self.aconfig['rollout'])
+
+            ec = self.editCost(self.dataset.provenance, dataset.df) #fix
+            
             batch_results.append((result[-1]['score'], ec , dataset, op))
 
         return sorted(batch_results, key=lambda x: x[0:1])

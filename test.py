@@ -20,7 +20,7 @@ print(p.run().df)
 
 
 ## Example 2
-df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil', 'United States'], 'Code' : ['US','USA','CN','CA','BA', 'U.S.A']})
+df = pd.DataFrame({'Name' : ['United States','United States','China','Canada','Brazil', 'Brasil', 'United States'], 'Code' : ['US','USA','CN','CA','BA', 'BZ', 'U.S.A']})
 d = Dataset(df)
 
 def qfn(a):
@@ -34,8 +34,8 @@ def qfn(a):
 
 d.addQualityMetric(qfn)
 
-p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=10, iterations=10)
-print(p.run())
+p = Policy(d, {'Name': 'cat', 'Code': 'cat'}, stepsize=10, batchsize=100, iterations=5)
+print(p.run()[0].df)
 
 #l = CleaningLearner(d, p)
 #l.train()
